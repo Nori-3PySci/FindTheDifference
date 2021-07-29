@@ -43,24 +43,24 @@ def output_char_list(question_json, cell_min=10, cell_max=20):
 
     return vertical, horizontal, output_list
 
-def question_fig(fonts_json, vertical, horizontal, output_list, fig_dir, fontsize, promotion_text, promotion_fontsize):
+def question_fig(fonts_json, default_path, vertical, horizontal, output_list, fig_dir, fontsize, promotion_text, promotion_fontsize):
 
     timenow = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
     with open(fonts_json, 'r') as f_in:
         fonts_list = json.load(f_in)
 
-    font_path = fonts_list[random.choice(list(fonts_list))]
+    font_path = default_path + fonts_list[random.choice(list(fonts_list))]
 
     fp = fm.FontProperties(fname=font_path)
     
-    fig = plt.figure(figsize=(vertical,horizontal))
+    fig = plt.figure(figsize=(horizontal, vertical))
     plt.clf()
 
     i = 0
-    for x in range(1, vertical+1):
-        for y in range(1, horizontal+1):
-            plt.text((x-1)/vertical, (y-1)/horizontal, output_list[i], fontsize=fontsize, fontproperties=fp)
+    for x in range(1, horizontal+1):
+        for y in range(1, vertical+1):
+            plt.text((x-1)/horizontal, (y-1)/vertical, output_list[i], fontsize=55, fontproperties=fp)
             i = i + 1
 
     plt.gca().spines['right'].set_visible(False)
@@ -97,20 +97,22 @@ def applytotwitter(settings_json, fig_dir, tweet_text):
 # -
 
 def main():
-    question_json = './question.json'
-    fonts_json = './fonts.json'
-    settings_json = './settings.json'
+    default_path = ' your default path '
     
-    fig_dir = './fig'
+    question_json = default_path + '/question.json'
+    fonts_json = default_path + '/fonts.json'
+    settings_json = default_path + '/settings.json'
+    
+    fig_dir = default_path + '/fig'
     fontsize = 55
     
-    tweet_text = 'この中に一つだけ違う文字があります😁\n#見つけたらRT'
+    tweet_text = 'この中に一つだけ違う文字があります😁\n#見つけたらRT \nhttps://github.com/Nori-3PySci/find_the_difference'
     
     promotion_text = '3PySci https://3pysci.com' 
     promotion_fontsize = 30
     
     vertical, horizontal, output_list = output_char_list(question_json)
-    question_fig(fonts_json, vertical, horizontal, output_list, fig_dir, fontsize, promotion_text, promotion_fontsize)
+    question_fig(fonts_json, default_path, vertical, horizontal, output_list, fig_dir, fontsize, promotion_text, promotion_fontsize)
     applytotwitter(settings_json, fig_dir, tweet_text)
 
 
