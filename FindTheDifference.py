@@ -14,6 +14,8 @@
 # ---
 
 # +
+default_dir = './'
+
 import random
 import json
 from matplotlib import pyplot as plt
@@ -41,16 +43,19 @@ def output_char_list(question_json, cell_min=10, cell_max=20):
         else:
             output_list.append(char_list[0])
 
-    return vertical, horizontal, output_list
+    return vertical, horizontal, diff_char_no, output_list, char_list
 
-def question_fig(fonts_json, default_path, vertical, horizontal, output_list, fig_dir, fontsize, promotion_text, promotion_fontsize):
-
-    timenow = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-
+def font_pick(fonts_json, fonts_dir):
+    
     with open(fonts_json, 'r') as f_in:
         fonts_list = json.load(f_in)
+    
+    font_name = random.choice(list(fonts_list))
+    font_path = os.path.join(fonts_dir, fonts_list[font_name])
+    
+    return font_name, font_path
 
-    font_path = default_path + fonts_list[random.choice(list(fonts_list))]
+def question_fig(font_path, vertical, horizontal, output_list, fig_dir, timenow):
 
     fp = fm.FontProperties(fname=font_path)
     
@@ -69,11 +74,16 @@ def question_fig(fonts_json, default_path, vertical, horizontal, output_list, fi
     plt.gca().spines['left'].set_visible(False)
     plt.tick_params(labelbottom=False, labelleft=False, labelright=False, labeltop=False, bottom=False, left=False, right=False, top=False)
 
-    plt.xlabel(promotion_text, fontsize=promotion_fontsize, fontproperties=fp)
+    plt.xlabel('3PySci https://3pysci.com', fontsize=30, fontproperties=fp)
 
-    plt.savefig(f'{fig_dir}/{timenow}.png', bbox_inches='tight', pad_inches = 0.1)
+    plt.savefig(f'{fig_dir}/{timenow}.png', facecolor="white", bbox_inches='tight', pad_inches = 0.1)
     
-def applytotwitter(settings_json, fig_dir, tweet_text):
+def log_write(question_log, timenow, vertical, horizontal, diff_char_num, char_list, font_name):
+    with open(question_log, 'a') as f_in:
+        row = f'{timenow},{vertical},{horizontal},{diff_char_num},{char_list},{font_name}\n'
+        f_in.write(row)
+    
+def applytotwitter(settings_json, fig_dir):
     png_files = []
     for file in os.listdir(fig_dir):
         if file[-4:] == '.png':
@@ -89,7 +99,7 @@ def applytotwitter(settings_json, fig_dir, tweet_text):
 
     api = tweepy.API(auth, wait_on_rate_limit = True)
 
-    text = tweet_text
+    text = 'この中に一つだけ違う文字があります😁\n#見つけたらRT\n\n#間違い探し\n#まちがいさがし\n#脳トレ\n#アハ体験\n#クイズ\n#Python\n#プログラミング\n\nhttps://github.com/Nori-3PySci/find_the_difference'
 
     api.update_with_media(status = text, filename = f'{fig_dir}/{upload_png}')
 
@@ -97,23 +107,22 @@ def applytotwitter(settings_json, fig_dir, tweet_text):
 # -
 
 def main():
-    default_path = ' your default path '
     
-    question_json = default_path + '/question.json'
-    fonts_json = default_path + '/fonts.json'
-    settings_json = default_path + '/settings.json'
+    question_json = os.path.join(default_dir, 'question.json')
+    fonts_json = os.path.join(default_dir, 'fonts.json')
+    settings_json = os.path.join(default_dir, 'settings.json')
+    question_log = os.path.join(default_dir, 'question_log.txt')
     
-    fig_dir = default_path + '/fig'
-    fontsize = 55
+    timenow = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     
-    tweet_text = 'この中に一つだけ違う文字があります😁\n#見つけたらRT \nhttps://github.com/Nori-3PySci/find_the_difference'
+    fonts_dir = os.path.join(default_dir, 'fonts')
+    fig_dir = os.path.join(default_dir, 'fig')
     
-    promotion_text = '3PySci https://3pysci.com' 
-    promotion_fontsize = 30
-    
-    vertical, horizontal, output_list = output_char_list(question_json)
-    question_fig(fonts_json, default_path, vertical, horizontal, output_list, fig_dir, fontsize, promotion_text, promotion_fontsize)
-    applytotwitter(settings_json, fig_dir, tweet_text)
+    vertical, horizontal, diff_char_num, output_list, char_list = output_char_list(question_json)
+    font_name, font_path = font_pick(fonts_json, fonts_dir)
+    question_fig(font_path, vertical, horizontal, output_list, fig_dir, timenow)
+    log_write(question_log, timenow, vertical, horizontal, diff_char_num, char_list, font_name)
+    applytotwitter(settings_json, fig_dir)
 
 
 if __name__ == '__main__':
