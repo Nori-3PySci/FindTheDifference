@@ -45,13 +45,13 @@ def output_char_list(question_json, cell_min=10, cell_max=20):
 
     return vertical, horizontal, diff_char_no, output_list, char_list
 
-def font_pick(fonts_json, fonts_dir):
+def font_pick(fonts_json, default_dir):
     
     with open(fonts_json, 'r') as f_in:
         fonts_list = json.load(f_in)
     
     font_name = random.choice(list(fonts_list))
-    font_path = os.path.join(fonts_dir, fonts_list[font_name])
+    font_path = os.path.join(default_dir, fonts_list[font_name])
     
     return font_name, font_path
 
@@ -114,12 +114,11 @@ def main():
     question_log = os.path.join(default_dir, 'question_log.txt')
     
     timenow = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    
-    fonts_dir = os.path.join(default_dir, 'fonts')
+
     fig_dir = os.path.join(default_dir, 'fig')
     
     vertical, horizontal, diff_char_num, output_list, char_list = output_char_list(question_json)
-    font_name, font_path = font_pick(fonts_json, fonts_dir)
+    font_name, font_path = font_pick(fonts_json, default_dir)
     question_fig(font_path, vertical, horizontal, output_list, fig_dir, timenow)
     log_write(question_log, timenow, vertical, horizontal, diff_char_num, char_list, font_name)
     applytotwitter(settings_json, fig_dir)
